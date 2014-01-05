@@ -29,8 +29,22 @@
 #define VALID_NUMBER_OBJECT_FRACTION "{\"TestName\" : 1234567.8 }" 
 #define VALID_NUMBER_OBJECT_FRACTION_LENGTH 25
 
+#define VALID_ARRAY_OBJECT_EMPTY "{\"TestArray\":[]}"
+#define VALID_ARRAY_OBJECT_EMPTY_LENGTH 16 
 #define VALID_ARRAY_OBJECT_NUMBERS "{ \"TestArray\" : [1, 2, 3] }"
-#define VALID_ARRAY_OBJECT_NUMBERS_LENGTH 26
+#define VALID_ARRAY_OBJECT_NUMBERS_LENGTH 27
+#define VALID_ARRAY_OBJECT_STRINGS "{ \"TestArray\" : [\"1\",\"2\", \"3\"] }"
+#define VALID_ARRAY_OBJECT_STRINGS_LENGTH 32
+#define VALID_ARRAY_OBJECT_ARRAYS "{ \"TestArray\" : [[1, 2, 3], [1, 2, 3], []] }"
+#define VALID_ARRAY_OBJECT_ARRAYS_LENGTH  44
+#define VALID_ARRAY_OBJECT_OBJECTS "{ \"TestArray\" : [{}, {}, {\"TestArray\":[]}] }"
+#define VALID_ARRAY_OBJECT_OBJECTS_LENGTH 44
+
+#define VALID_MULTI_OBJECT_STRINGS "{\"TestName\" : \"String 1\", \"Test2\" : \"String 2\"}"
+#define VALID_MULTI_OBJECT_STRINGS_LENGTH 47
+#define VALID_MULTI_OBJECT_EVERYTHING "{ \"1\" : [1,2,3], \"2\" : \"String\" , \"3\" : 12345, \"4\" : {} }"
+#define VALID_MULTI_OBJECT_EVERYTHING_LENGTH 57 
+
 #define INVALID_EMPTY_OBJECT_COMMA "{,}"
 
 
@@ -43,6 +57,8 @@
 int jsonvalidation_testValidEmptyObject(int verbose);
 int jsonvalidation_testValidStringObjects(int verbose);
 int jsonvalidation_testValidNumberObjects(int verbose);
+int jsonvalidation_testValidArrayObjects(int verbose);
+int jsonvalidation_testValidMultiObjects(int verbose);
 
 void jsonvalidation_runTests(int verbose)
 {
@@ -66,6 +82,17 @@ void jsonvalidation_runTests(int verbose)
 	else
 		fprintf(stdout, "Number Objects Failed!\n");
 	
+	passed = jsonvalidation_testValidArrayObjects(verbose);
+	if(passed == TEST_PASSED)
+		fprintf(stdout, "Array Objects Passed!\n");
+	else
+		fprintf(stdout, "Array Objects Failed!\n");
+	
+	passed = jsonvalidation_testValidMultiObjects(verbose);
+	if(passed == TEST_PASSED)
+		fprintf(stdout, "Multi Objects Passed!\n");
+	else
+		fprintf(stdout, "Multi Objects Failed!\n");
 }
 
 int jsonvalidation_testValidEmptyObject(int verbose)
@@ -298,3 +325,149 @@ int jsonvalidation_testValidNumberObjects(int verbose)
 	return testResult;
 }
 
+int jsonvalidation_testValidArrayObjects(int verbose)
+{
+	char *JSON = (char *)malloc(sizeof(char) * DEFAULT_TEST_JSON_SIZE);
+	strcpy(JSON, VALID_ARRAY_OBJECT_EMPTY);
+	int checkResult = json_checkValidJSON(JSON);
+	int testResult = TEST_PASSED;
+	
+	if(checkResult == JSON_OBJECT_INVALID)
+	{
+		printResult(verbose, "Empty array test failed (object invalid)!\n");
+		testResult = TEST_FAILED;
+	}
+	else if(checkResult != VALID_ARRAY_OBJECT_EMPTY_LENGTH)
+	{
+		printResult(verbose, "Empty array test failed (bad length)! Returned length was %d expected %d\n",
+				checkResult, VALID_ARRAY_OBJECT_EMPTY_LENGTH);
+		testResult = TEST_FAILED;
+	}
+	else
+	{
+		printResult(verbose, "Empty array test passed!\n");
+	}
+	
+	strcpy(JSON, VALID_ARRAY_OBJECT_NUMBERS);
+	checkResult = json_checkValidJSON(JSON);
+	
+	if(checkResult == JSON_OBJECT_INVALID)
+	{
+		printResult(verbose, "Numbers array test failed (object invalid)!\n");
+		testResult = TEST_FAILED;
+	}
+	else if(checkResult != VALID_ARRAY_OBJECT_NUMBERS_LENGTH)
+	{
+		printResult(verbose, "Numbers array test failed (bad length)! Returned length was %d expected %d\n",
+				checkResult, VALID_ARRAY_OBJECT_NUMBERS_LENGTH);
+		testResult = TEST_FAILED;
+	}
+	else
+	{
+		printResult(verbose, "Numbers array test passed!\n");
+	}
+	
+	strcpy(JSON, VALID_ARRAY_OBJECT_STRINGS);
+	checkResult = json_checkValidJSON(JSON);
+	
+	if(checkResult == JSON_OBJECT_INVALID)
+	{
+		printResult(verbose, "Strings array test failed (object invalid)!\n");
+		testResult = TEST_FAILED;
+	}
+	else if(checkResult != VALID_ARRAY_OBJECT_STRINGS_LENGTH)
+	{
+		printResult(verbose, "Strings array test failed (bad length)! Returned length was %d expected %d\n",
+				checkResult, VALID_ARRAY_OBJECT_STRINGS_LENGTH);
+		testResult = TEST_FAILED;
+	}
+	else
+	{
+		printResult(verbose, "Strings array test passed!\n");
+	}
+	
+	strcpy(JSON, VALID_ARRAY_OBJECT_ARRAYS);
+	checkResult = json_checkValidJSON(JSON);
+	
+	if(checkResult == JSON_OBJECT_INVALID)
+	{
+		printResult(verbose, "Arrays array test failed (object invalid)!\n");
+		testResult = TEST_FAILED;
+	}
+	else if(checkResult != VALID_ARRAY_OBJECT_ARRAYS_LENGTH)
+	{
+		printResult(verbose, "Arrays array test failed (bad length)! Returned length was %d expected %d\n",
+				checkResult, VALID_ARRAY_OBJECT_ARRAYS_LENGTH);
+		testResult = TEST_FAILED;
+	}
+	else
+	{
+		printResult(verbose, "Arrays array test passed!\n");
+	}
+	
+	strcpy(JSON, VALID_ARRAY_OBJECT_OBJECTS);
+	checkResult = json_checkValidJSON(JSON);
+	
+	if(checkResult == JSON_OBJECT_INVALID)
+	{
+		printResult(verbose, "Objects array test failed (object invalid)!\n");
+		testResult = TEST_FAILED;
+	}
+	else if(checkResult != VALID_ARRAY_OBJECT_OBJECTS_LENGTH)
+	{
+		printResult(verbose, "Objects array test failed (bad length)! Returned length was %d expected %d\n",
+				checkResult, VALID_ARRAY_OBJECT_OBJECTS_LENGTH);
+		testResult = TEST_FAILED;
+	}
+	else
+	{
+		printResult(verbose, "Objects array test passed!\n");
+	}
+	free(JSON);
+	return testResult;	
+}
+
+int jsonvalidation_testValidMultiObjects(int verbose)
+{
+	char *JSON = (char *)malloc(sizeof(char) * DEFAULT_TEST_JSON_SIZE);
+	strcpy(JSON, VALID_MULTI_OBJECT_STRINGS);
+	int checkResult = json_checkValidJSON(JSON);
+	int testResult = TEST_PASSED;
+
+	
+	if(checkResult == JSON_OBJECT_INVALID)
+	{
+		printResult(verbose, "Multi-object Strings test failed (object invalid)!\n");
+		testResult = TEST_FAILED;
+	}
+	else if(checkResult != VALID_MULTI_OBJECT_STRINGS_LENGTH)
+	{
+		printResult(verbose, "Multi-object Strings test failed (bad length)! Returned length was %d expected %d\n",
+				checkResult, VALID_MULTI_OBJECT_STRINGS_LENGTH);
+		testResult = TEST_FAILED;
+	}
+	else
+	{
+		printResult(verbose, "Multi-object Strings test passed!\n");
+	}
+	
+	strcpy(JSON, VALID_MULTI_OBJECT_EVERYTHING);
+	checkResult = json_checkValidJSON(JSON);
+	if(checkResult == JSON_OBJECT_INVALID)
+	{
+		printResult(verbose, "Multi-object Everything test failed (object invalid)!\n");
+		testResult = TEST_FAILED;
+	}
+	else if(checkResult != VALID_MULTI_OBJECT_EVERYTHING_LENGTH)
+	{
+		printResult(verbose, "Multi-object Everything test failed (bad length)! Returned length was %d expected %d\n",
+				checkResult, VALID_MULTI_OBJECT_EVERYTHING_LENGTH);
+		testResult = TEST_FAILED;
+	}
+	else
+	{
+		printResult(verbose, "Multi-object Everything test passed!\n");
+	}
+	free(JSON);
+	return testResult;	
+}

@@ -13,7 +13,7 @@
 
 #define NUMBER_IS_VALID_NON_EXPONENT 1
 #define NUMBER_IS_VALID_EXPONENT 2
-#define NUMBER_IS_COMMA_OR_WHITESPACE 3
+#define NUMBER_IS_COMMA_WHITESPACE_OR_END_OF_ARRAY_OBJECT 3
 #define NUMBER_IS_PERIOD 4
 #define NUMBER_IS_INVALID -1
 
@@ -261,11 +261,12 @@ int json_checkValidValue(char *JSON)
 //Pass pointer to start of array
 int json_checkValidArray(char *JSONArray)
 {
-	int i, length, objlen, needsComma;
+	int i, length, objlen, needsComma, firstValue;
 	char currentChar;
 	i = 1;
-	needsComma = 0;
+	needsComma = ARRAY_RETURNABLE_OR_NEEDS_COMMA;
 	objlen = strlen(JSONArray);
+	firstValue = 1;
 	
 	length = 0;
 
@@ -295,20 +296,27 @@ int json_checkValidArray(char *JSONArray)
 				}
 			case ']':
 				if(needsComma == ARRAY_RETURNABLE_OR_NEEDS_COMMA)
-					return i++;
+				{
+					i++;
+					return i;
+				}
 				else
 					return JSON_OBJECT_INVALID;
 			default:
-				if(needsComma == ARRAY_RETURNABLE_OR_NEEDS_COMMA)
+				if(needsComma == ARRAY_RETURNABLE_OR_NEEDS_COMMA && !firstValue)
 					return JSON_OBJECT_INVALID;
 			
-				length += json_checkValidValue(JSONArray + i);
+				length = json_checkValidValue(JSONArray + i);
 				
 				if(length == JSON_OBJECT_INVALID)
 					return length;
 				else
+				{
+					if(firstValue)
+						firstValue = 0;
 					i += length;
 					needsComma = ARRAY_RETURNABLE_OR_NEEDS_COMMA;
+				}
 		}
 	}
 	return JSON_OBJECT_INVALID;
@@ -394,7 +402,7 @@ int json_checkValidNumber(char *JSON)
 				firstChar = 0;
 				i++;	
 				break;
-			case NUMBER_IS_COMMA_OR_WHITESPACE:
+			case NUMBER_IS_COMMA_WHITESPACE_OR_END_OF_ARRAY_OBJECT:
 				return i;
 				break;
 			case NUMBER_IS_PERIOD:
@@ -445,7 +453,9 @@ int json_isValidNumberCharacter(char check, int firstChar, int hasExponent, int 
 		case '\n':
 		case '\t':
 		case ',':
-			return NUMBER_IS_COMMA_OR_WHITESPACE;
+		case '}':
+		case ']':
+			return NUMBER_IS_COMMA_WHITESPACE_OR_END_OF_ARRAY_OBJECT;
 		default:
 			return NUMBER_IS_INVALID;
 	}
