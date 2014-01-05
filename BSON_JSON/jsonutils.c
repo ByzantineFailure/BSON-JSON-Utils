@@ -14,25 +14,25 @@
 #define NUMBER_IS_VALID_NON_EXPONENT 1
 #define NUMBER_IS_VALID_EXPONENT 2
 #define NUMBER_IS_COMMA_OR_WHITESPACE 3
+#define NUMBER_IS_PERIOD 4
 #define NUMBER_IS_INVALID -1
 
 #define HEX_ESCAPE_LENGTH 4
 #define HEX_RESULT_VALID_HEX 1
 #define HEX_RESULT_INVALID_HEX -1
 
-#define JSON_OBJECT_INVALID -1
 
 int json_checkValidArray(char *JSONArray);
 int json_checkValidValue(char *JSON);
 int json_checkValidPair(char *JSON);
 int json_checkValidString(char *JSON);
 int json_checkValidNumber(char *JSON);
-int json_isValidNumberCharacter(char check, int firstChar, int hasExponent);
+int json_isValidNumberCharacter(char check, int firstChar, int hasExponent, int hasPeriod);
 int json_checkNextFourCharsForHex(char *JSON);
 
 bson_Document *bson_parseJSON(char *JSON, int JSON_length)
 {
-		
+	return 0;		
 }
 
 //Returns length of object if successful, -1 if not
@@ -196,7 +196,6 @@ int json_checkValidValue(char *JSON)
 			case '\"':
 				breakLoop = 1;
 				length = json_checkValidString(JSON + i);
-				i++;
 				break;
 			case '0':
 			case '1':
@@ -211,12 +210,10 @@ int json_checkValidValue(char *JSON)
 			case '-':
 				breakLoop = 1;
 				length = json_checkValidNumber(JSON + i);
-				i++;
 				break;
 			case '[':
 				breakLoop = 1;
 				length = json_checkValidArray(JSON + i);
-				i++;
 				break;
 			case '{':
 				breakLoop = 1;
@@ -307,7 +304,7 @@ int json_checkValidArray(char *JSONArray)
 			
 				length += json_checkValidValue(JSONArray + i);
 				
-				if(length = JSON_OBJECT_INVALID)
+				if(length == JSON_OBJECT_INVALID)
 					return length;
 				else
 					i += length;
@@ -351,7 +348,7 @@ int json_checkValidString(char *JSON)
 						break;
 					case 'u':
 						hexResult = json_checkNextFourCharsForHex(JSON + i);
-						if(hexResult = JSON_OBJECT_INVALID)
+						if(hexResult == JSON_OBJECT_INVALID)
 							return JSON_OBJECT_INVALID;
 						
 						i += HEX_ESCAPE_LENGTH;
@@ -360,6 +357,7 @@ int json_checkValidString(char *JSON)
 					default:
 						return JSON_OBJECT_INVALID;
 				}
+				break;
 			case '\"':
 				i++;
 				return i;
@@ -374,17 +372,18 @@ int json_checkValidString(char *JSON)
 //Pass pointer to start of String
 int json_checkValidNumber(char *JSON)
 {
-	int i, objlen, firstChar, hasExponent;
+	int i, objlen, firstChar, hasExponent, hasPeriod;
 	char currentChar;
 	i = 0;
 	hasExponent = 0;
 	firstChar = 1;
+	hasPeriod = 0;
 	objlen = strlen(JSON);
 
 	while(i < objlen)
 	{
 		currentChar = *(JSON + i);
-		switch(json_isValidNumberCharacter(currentChar, firstChar, hasExponent))
+		switch(json_isValidNumberCharacter(currentChar, firstChar, hasExponent, hasPeriod))
 		{
 			case NUMBER_IS_VALID_EXPONENT:
 				hasExponent = 1;
@@ -395,17 +394,22 @@ int json_checkValidNumber(char *JSON)
 				firstChar = 0;
 				i++;	
 				break;
-			case NUMBER_IS_INVALID:
-				return JSON_OBJECT_INVALID;
 			case NUMBER_IS_COMMA_OR_WHITESPACE:
 				return i;
-			
+				break;
+			case NUMBER_IS_PERIOD:
+				hasPeriod = 1;
+				i++;
+				break;
+			case NUMBER_IS_INVALID:
+				return JSON_OBJECT_INVALID;
+				break;
 		}
 	}
 	return JSON_OBJECT_INVALID;	
 }
 
-int json_isValidNumberCharacter(char check, int firstChar, int hasExponent)
+int json_isValidNumberCharacter(char check, int firstChar, int hasExponent, int hasPeriod)
 {
 	switch(check)
 	{
@@ -432,6 +436,11 @@ int json_isValidNumberCharacter(char check, int firstChar, int hasExponent)
 				return NUMBER_IS_VALID_NON_EXPONENT;
 			else
 				return NUMBER_IS_INVALID;
+		case '.':
+			if(hasPeriod)
+				return NUMBER_IS_INVALID;
+			else
+				return NUMBER_IS_PERIOD;
 		case ' ':
 		case '\n':
 		case '\t':
