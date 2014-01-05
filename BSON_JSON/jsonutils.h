@@ -23,6 +23,8 @@ typedef struct bson_Element {
 #define BSON_STRUCT_INCLUDE
 #endif
 
+#define JSON_OBJECT_INVALID -1
+
 bson_Document *bson_parseJSON(char *JSON, int JSON_length);
 
 int json_checkValidJSON(char *JSON);
