@@ -13,6 +13,8 @@ DEBUG_OBJECT=debugutils.o
 TEST_OBJECT=main.o
 LIB_OBJECT=jsonutils.o
 
+WINDOWS_IS_STUPID_OBJECT=jsonvalidation_tests.o
+
 #Executable
 TEST_EXECUTABLE=test
 
@@ -32,3 +34,6 @@ $(LIB_OBJECT):
 
 clean:
 	rm -rf *o $(TEST_EXECUTABLE)
+
+windowsclean:
+	rm -rf $(TEST_EXECUTABLE).exe $(LIB_OBJECT) $(DEBUG_OBJECT) $(TEST_OBJECT) $(WINDOWS_IS_STUPID_OBJECT)
