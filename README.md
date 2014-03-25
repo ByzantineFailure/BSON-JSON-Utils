@@ -1,3 +1,5 @@
+IMPORTANT:  This probject has been abandoned in favor of an implementation I'm doing to learn Go.  I'm keeping this here as a historical record, but it probably won't be updated.  Like, ever.
+
 Not even close to development complete.
 
 Basic JSON-BSON tools in C.
